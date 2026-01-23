@@ -1,0 +1,82 @@
+# PACE ICE Disaggregated Inference Deployment Configuration
+
+# Model configuration
+model_name: "facebook/opt-1.3b"  # Start with smaller model for testing
+
+# Prefill worker configuration  
+prefill:
+  nodes: 3                    # Number of prefill nodes
+  partition: "gpu-a100"       # Use A100 nodes for high compute
+  max_sequences: 16           # Batch size for prefill
+  max_context_length: 4096    # Maximum prompt length
+  gpu_memory_utilization: 0.9 # Use most GPU memory for computation
+  
+# Decode worker configuration
+decode:
+  nodes: 6                    # More decode nodes for longer sequences
+  partition: "gpu-rtx"        # Use RTX nodes with high memory
+  max_sequences: 64           # Higher concurrency for decode
+  max_context_length: 8192    # Support longer sequences
+  gpu_memory_utilization: 0.85 # Leave room for KV cache
+
+# Gateway configuration
+gateway:
+  partition: "cpu"            # Run on CPU node for orchestration
+  port: 8080                  # External access port
+  max_concurrent_requests: 100
+  
+# Network optimizations for PACE ICE
+network:
+  interconnect: "infiniband"   # PACE ICE has InfiniBand
+  bandwidth_gbps: 25          # Expected bandwidth between nodes
+  enable_rdma: true           # Use RDMA for cache transfer
+  compression: true           # Compress KV cache transfers
+  
+# Performance tuning
+performance:
+  cache_transfer_timeout: 5000    # 5 second timeout for cache transfer
+  prefill_timeout: 30000          # 30 second timeout for prefill
+  decode_timeout: 120000          # 2 minute timeout for decode
+  enable_batching: true           # Enable dynamic batching
+  
+# Resource limits
+resources:
+  max_prefill_memory_gb: 32   # Memory per prefill node
+  max_decode_memory_gb: 64    # Memory per decode node  
+  max_job_runtime_hours: 2    # SLURM job time limit
+  
+# Monitoring and logging
+monitoring:
+  enable_metrics: true
+  metrics_interval: 30        # Collect metrics every 30 seconds
+  log_level: "INFO"
+  prometheus_port: 9090       # If using Prometheus
+  
+# Scaling configuration
+scaling:
+  auto_scale: false           # Manual scaling for initial testing
+  min_prefill_nodes: 2
+  max_prefill_nodes: 8
+  min_decode_nodes: 4
+  max_decode_nodes: 16
+  scale_threshold_utilization: 0.8
+
+# Fault tolerance
+fault_tolerance:
+  enable_health_checks: true
+  health_check_interval: 30
+  max_retries: 3
+  fallback_to_hybrid: true    # Use hybrid nodes if specialized nodes fail
+
+# Security (for production)
+security:
+  enable_auth: false          # Disable for testing
+  api_key_required: false
+  allowed_networks: []        # Empty = allow all
+
+# Development/testing options  
+development:
+  mock_vllm: false            # Use real vLLM (set true for testing without GPUs)
+  log_cache_transfers: true   # Log detailed cache transfer info
+  enable_profiling: false     # CPU/GPU profiling
+  save_metrics: true          # Save performance metrics to file

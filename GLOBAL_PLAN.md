@@ -1,0 +1,113 @@
+# Distributed Inference Server - Global Planning Document
+
+## Project Overview
+A high-performance distributed LLM inference system without Kubernetes, featuring:
+- KV cache routing with prefix-aware routing
+- Shared cache architecture across inference nodes
+- Disaggregated prefill and decode processing
+
+## Architecture Goals
+1. **Performance**: 3-10x latency reduction through intelligent caching
+2. **Scalability**: Horizontal scaling of prefill/decode independently  
+3. **Efficiency**: Maximize GPU utilization through cache reuse
+4. **Reliability**: Fault-tolerant with graceful degradation
+
+## Core Components
+
+### 1. Gateway Service (`gateway/`)
+- **Purpose**: Request entry point with intelligent routing
+- **Responsibilities**: 
+  - Prefix extraction and hashing
+  - Cache-aware routing decisions
+  - Load balancing and failover
+- **Key Files**: `router.py`, `prefix_analyzer.py`, `load_balancer.py`
+
+### 2. Cache System (`cache/`)
+- **Purpose**: Multi-tier distributed KV cache management
+- **Responsibilities**:
+  - Cache registry and metadata management
+  - Inter-node cache transfer protocols
+  - Eviction policies and consistency
+- **Key Files**: `registry.py`, `manager.py`, `transfer.py`
+
+### 3. Prefill Service (`prefill/`)
+- **Purpose**: Dedicated prompt processing and KV cache generation
+- **Responsibilities**:
+  - Prompt tokenization and processing
+  - KV cache computation and storage
+  - Cache publishing to shared storage
+- **Key Files**: `processor.py`, `cache_generator.py`
+
+### 4. Decode Service (`decode/`)
+- **Purpose**: Token generation using cached KV pairs
+- **Responsibilities**:
+  - Cache retrieval and validation
+  - Incremental token generation
+  - Response streaming
+- **Key Files**: `generator.py`, `cache_consumer.py`
+
+### 5. Common (`common/`)
+- **Purpose**: Shared utilities and data structures
+- **Responsibilities**:
+  - Data models and schemas
+  - Network protocols and serialization
+  - Monitoring and logging utilities
+- **Key Files**: `models.py`, `protocols.py`, `metrics.py`
+
+## Implementation Phases
+
+### Phase 1: Foundation (Week 1-2)
+- [ ] Core data structures and models
+- [ ] Prefix hashing system
+- [ ] Basic cache registry
+- [ ] Unit tests for core components
+
+### Phase 2: Cache System (Week 3-4)  
+- [ ] Multi-tier cache manager
+- [ ] Cache transfer protocols
+- [ ] Routing decision engine
+- [ ] Integration tests
+
+### Phase 3: Services (Week 5-6)
+- [ ] Gateway service implementation
+- [ ] Prefill service implementation  
+- [ ] Decode service implementation
+- [ ] End-to-end tests
+
+### Phase 4: Production (Week 7-8)
+- [ ] Performance optimization
+- [ ] Monitoring and observability
+- [ ] Production deployment configs
+- [ ] Comprehensive documentation
+
+## Technology Stack
+- **Language**: Python 3.11+
+- **Async Framework**: asyncio + aiohttp
+- **Serialization**: msgpack for performance
+- **Cache Storage**: Redis for metadata, direct TCP for bulk transfer
+- **Testing**: pytest + pytest-asyncio
+- **Monitoring**: Prometheus metrics + structured logging
+
+## Performance Targets
+- **Latency**: <100ms TTFT for cached prefixes
+- **Throughput**: >1000 RPS per node
+- **Cache Hit Rate**: >80% for common prefixes
+- **Memory Efficiency**: <50% GPU memory usage
+
+## Scaling Considerations
+- **Horizontal**: Independent scaling of each service type
+- **Vertical**: Efficient resource utilization within nodes
+- **Cache**: Intelligent cache placement and replication
+- **Network**: Optimized data transfer protocols
+
+## Risk Mitigation
+- **Cache Misses**: Graceful fallback to full computation
+- **Node Failures**: Distributed cache with replication
+- **Network Partitions**: Local cache fallback strategies
+- **Memory Pressure**: Multi-tier eviction policies
+
+## Success Metrics
+- Response latency percentiles (p50, p95, p99)
+- Cache hit rates by service and prefix type
+- Resource utilization (GPU, CPU, memory, network)
+- System availability and error rates
