@@ -1,0 +1,33 @@
+# Dockerfile for Gateway Service
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy source code
+COPY src/ /app/src/
+COPY pyproject.toml /app/
+
+# Install the package
+RUN pip install -e .
+
+# Expose gateway port
+EXPOSE 8000
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV REDIS_URL=redis://redis:6379
+
+# Run gateway service
+CMD ["python3", "-m", "src.gateway.production_server", \
+     "--host", "0.0.0.0", \
+     "--port", "8000"]
