@@ -2,6 +2,24 @@
 
 A high-performance distributed inference system for large language models with intelligent KV cache routing and sharing.
 
+[![Demo](https://img.shields.io/badge/demo-live-success)](DEMO.md)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/rishimj/distributed-inference-sever)
+[![Docker](https://img.shields.io/badge/docker-ready-blue)](docker-compose.yml)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+## 🎬 [Try the Demo](DEMO.md) | No GPU Required!
+
+Experience the system in action with our **free demo** that runs without GPUs:
+
+```bash
+# One-command demo start
+./scripts/start_demo.sh
+
+# Then visit: http://localhost:8080
+```
+
+See [DEMO.md](DEMO.md) for all demo options including GitHub Codespaces, Gitpod, and cloud hosting.
+
 ## 🚀 Features
 
 - **Cache-Aware Routing**: Intelligent request routing based on KV cache availability

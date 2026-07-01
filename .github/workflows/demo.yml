@@ -1,0 +1,56 @@
+name: Build and Test Demo
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Build demo images
+      run: |
+        docker-compose -f docker-compose.demo.yml build
+    
+    - name: Start demo services
+      run: |
+        docker-compose -f docker-compose.demo.yml up -d
+        sleep 20
+    
+    - name: Check service health
+      run: |
+        echo "Checking gateway..."
+        curl -f http://localhost:8000/health || exit 1
+        
+        echo "Checking demo UI..."
+        curl -f http://localhost:8080 || exit 1
+    
+    - name: Test inference
+      run: |
+        curl -X POST http://localhost:8000/generate \
+          -H "Content-Type: application/json" \
+          -d '{"prompt": "Test", "max_tokens": 10}' \
+          || exit 1
+    
+    - name: Check metrics
+      run: |
+        curl -f http://localhost:8000/metrics || exit 1
+    
+    - name: View logs
+      if: failure()
+      run: |
+        docker-compose -f docker-compose.demo.yml logs
+    
+    - name: Stop services
+      if: always()
+      run: |
+        docker-compose -f docker-compose.demo.yml down

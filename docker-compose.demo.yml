@@ -1,0 +1,111 @@
+version: '3.8'
+
+# Demo configuration - runs WITHOUT GPU for showcasing
+# Uses mock vLLM workers for demonstration purposes
+
+services:
+  # Redis for cache registry
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Gateway service
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=INFO
+      - DEMO_MODE=true
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Mock Worker 1 (no GPU required)
+  worker-1:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway  # Use non-GPU dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - DEMO_MODE=true
+      - WORKER_ID=worker-1
+      - GATEWAY_URL=http://gateway:8000
+    command: ["python3", "-m", "src.workers.vllm_worker", "--model", "mock-model", "--port", "8001"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Mock Worker 2 (no GPU required)
+  worker-2:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    ports:
+      - "8002:8002"
+    environment:
+      - DEMO_MODE=true
+      - WORKER_ID=worker-2
+      - GATEWAY_URL=http://gateway:8000
+    command: ["python3", "-m", "src.workers.vllm_worker", "--model", "mock-model", "--port", "8002"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    restart: unless-stopped
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=demo123
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # Demo frontend (simple web UI)
+  demo-ui:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./demo/index.html:/usr/share/nginx/html/index.html:ro
+      - ./demo/style.css:/usr/share/nginx/html/style.css:ro
+      - ./demo/app.js:/usr/share/nginx/html/app.js:ro
+    restart: unless-stopped

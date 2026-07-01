@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributed Inference Server - Demo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Distributed Inference Server</h1>
+            <p class="subtitle">High-Performance LLM Inference with Cache-Aware Routing</p>
+        </header>
+
+        <div class="demo-section">
+            <h2>Live Demo</h2>
+            <p class="note">⚠️ Running in mock mode (no GPU required)</p>
+            
+            <div class="input-section">
+                <label for="prompt">Enter your prompt:</label>
+                <textarea id="prompt" rows="4" placeholder="Once upon a time in a faraway land...">Once upon a time in a faraway land</textarea>
+                
+                <div class="controls">
+                    <label>
+                        Max Tokens:
+                        <input type="number" id="maxTokens" value="100" min="10" max="500">
+                    </label>
+                    <label>
+                        Temperature:
+                        <input type="number" id="temperature" value="0.7" min="0" max="2" step="0.1">
+                    </label>
+                </div>
+                
+                <button id="generateBtn" onclick="generateText()">Generate Text</button>
+            </div>
+
+            <div class="output-section">
+                <h3>Response:</h3>
+                <div id="output" class="output-box">
+                    <p class="placeholder">Generated text will appear here...</p>
+                </div>
+                
+                <div id="metrics" class="metrics-box" style="display: none;">
+                    <h4>Metrics:</h4>
+                    <div class="metric-grid">
+                        <div class="metric">
+                            <span class="metric-label">Worker:</span>
+                            <span id="worker" class="metric-value">-</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Response Time:</span>
+                            <span id="responseTime" class="metric-value">-</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Cache Hit:</span>
+                            <span id="cacheHit" class="metric-value">-</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Tokens:</span>
+                            <span id="tokens" class="metric-value">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="architecture-section">
+            <h2>System Architecture</h2>
+            <pre class="architecture-diagram">
+┌─────────────┐
+│   Gateway   │  ← Intelligent routing with cache awareness
+└──────┬──────┘
+       │
+   ┌───┴───┬───────┐
+   │       │       │
+┌──▼──┐ ┌──▼──┐ ┌──▼──┐
+│ W1  │ │ W2  │ │ W3  │  ← vLLM workers with KV cache
+└──┬──┘ └──┬──┘ └──┬──┘
+   │       │       │
+   └───┬───┴───┬───┘
+       │       │
+    ┌──▼───────▼──┐
+    │   Registry  │  ← Redis-backed cache coordination
+    └─────────────┘
+            </pre>
+        </div>
+
+        <div class="features-section">
+            <h2>Key Features</h2>
+            <div class="feature-grid">
+                <div class="feature">
+                    <h3>⚡ Cache-Aware Routing</h3>
+                    <p>Intelligent routing based on KV cache availability</p>
+                </div>
+                <div class="feature">
+                    <h3>📊 Real-time Metrics</h3>
+                    <p>Prometheus + Grafana monitoring</p>
+                </div>
+                <div class="feature">
+                    <h3>🔄 Auto-Scaling</h3>
+                    <p>Dynamic worker management</p>
+                </div>
+                <div class="feature">
+                    <h3>💾 Cache Sharing</h3>
+                    <p>KV cache transfer between nodes</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="links-section">
+            <h2>Quick Links</h2>
+            <div class="link-grid">
+                <a href="http://localhost:9090" target="_blank" class="link-card">
+                    <h3>📈 Prometheus</h3>
+                    <p>Metrics & monitoring</p>
+                </a>
+                <a href="http://localhost:3000" target="_blank" class="link-card">
+                    <h3>📊 Grafana</h3>
+                    <p>Dashboards & visualization</p>
+                </a>
+                <a href="http://localhost:8000/health" target="_blank" class="link-card">
+                    <h3>❤️ Health Check</h3>
+                    <p>System status</p>
+                </a>
+                <a href="https://github.com/rishimj/distributed-inference-sever" target="_blank" class="link-card">
+                    <h3>📦 GitHub</h3>
+                    <p>Source code</p>
+                </a>
+            </div>
+        </div>
+
+        <footer>
+            <p>Built with vLLM, Redis, Prometheus, and Grafana</p>
+            <p><a href="https://github.com/rishimj/distributed-inference-sever">View on GitHub</a></p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

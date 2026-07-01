@@ -1,0 +1,35 @@
+# Gitpod configuration for easy demo
+image: gitpod/workspace-full
+
+tasks:
+  - name: Setup and Start Demo
+    init: |
+      # Install dependencies
+      pip install -r requirements.txt
+      echo "Dependencies installed!"
+    command: |
+      echo "Starting demo server..."
+      ./scripts/start_demo.sh
+      
+ports:
+  - port: 8080
+    onOpen: open-browser
+    description: Demo Web UI
+    visibility: public
+  - port: 8000
+    onOpen: notify
+    description: Gateway API
+    visibility: public
+  - port: 3000
+    onOpen: notify
+    description: Grafana
+    visibility: public
+  - port: 9090
+    onOpen: ignore
+    description: Prometheus
+    visibility: public
+
+vscode:
+  extensions:
+    - ms-python.python
+    - ms-azuretools.vscode-docker
