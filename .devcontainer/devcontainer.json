@@ -1,0 +1,33 @@
+{
+  "name": "Distributed Inference Demo",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "postCreateCommand": "pip install -r requirements.txt",
+  "postStartCommand": "./scripts/start_demo.sh",
+  "forwardPorts": [8080, 8000, 3000, 9090],
+  "portsAttributes": {
+    "8080": {
+      "label": "Demo UI",
+      "onAutoForward": "openBrowser"
+    },
+    "8000": {
+      "label": "Gateway API"
+    },
+    "3000": {
+      "label": "Grafana"
+    },
+    "9090": {
+      "label": "Prometheus"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}
